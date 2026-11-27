@@ -50,6 +50,7 @@ def collect_once():
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "source": "netbird status counters",
             "peers": out,
+            "interface": netbird_status.interface_rates(netbird_status.interface_counters(), previous, previous_time, now),
         }
 
 
