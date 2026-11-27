@@ -17,7 +17,7 @@ services:
       init-config:
         condition: service_completed_successfully
     ports:
-      - "3000:8080"
+      - "${DASHY_PORT:-3000}:8080"
     volumes:
       - type: bind
         source: ./user-data
