@@ -95,7 +95,8 @@ def normalize_peer(raw):
     if isinstance(connected_raw, bool):
         connected = connected_raw
     elif connected_raw is not None:
-        connected = str(connected_raw).lower() in {"connected", "true", "1", "p2p", "relayed"}
+        text = str(connected_raw).lower()
+        connected = not ("disconnect" in text or "connecting" in text or text in {"false", "0"})
     slug = re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-") or "peer"
     pid, display_name, role = PEER_META.get(ip, (slug, str(name), ""))
     return {
@@ -116,7 +117,7 @@ def peers_from_json(command):
         return []
     data = json.loads(result.stdout)
     peers = [normalize_peer(p) for p in find_peer_list(data) if isinstance(p, dict)]
-    return [p for p in peers if p["rxBytes"] is not None or p["txBytes"] is not None or p["ip"]]
+    return [p for p in peers if p["rxBytes"] is not None and p["txBytes"] is not None]
 
 
 def peers_from_table(command):
