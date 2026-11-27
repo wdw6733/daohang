@@ -24,12 +24,13 @@ a{color:inherit;text-decoration:none}
 button,input{font:inherit}
 :focus-visible{outline:3px solid rgba(56,189,248,.85);outline-offset:3px;border-radius:12px}
 .wrap{width:min(1280px,calc(100% - 24px));margin:0 auto;padding:14px 0 28px;position:relative}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:2px 0 10px}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}
-.logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--green));display:grid;place-items:center;box-shadow:0 12px 34px rgba(56,189,248,.28);font-weight:900;color:#04101f}
-.brand h1{font-size:17px;margin:0;letter-spacing:.02em}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.clock{text-align:right}.clock strong{display:block;font-size:24px;line-height:1}.clock span{color:var(--muted);font-size:13px}
-.search{margin:0 auto 12px;max-width:640px;display:flex;align-items:center;gap:10px;background:rgba(3,7,18,.66);border:1px solid var(--line);border-radius:999px;padding:8px 10px 8px 18px;backdrop-filter:blur(18px);box-shadow:var(--shadow)}
+.topbar{display:grid;grid-template-columns:minmax(190px,auto) minmax(280px,640px) auto auto;align-items:center;gap:12px;margin:2px 0 12px}
+.datebox{white-space:nowrap;color:var(--muted);font-size:14px}.datebox strong{color:var(--text);font-size:16px;margin-right:8px;font-variant-numeric:tabular-nums}
+.clock{text-align:right;white-space:nowrap}.clock strong{display:block;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.settings-btn{height:42px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.06);color:#dbeafe;padding:0 16px;cursor:pointer;font-weight:700}
+.settings-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px;margin-bottom:12px}.setting{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(148,197,255,.14);background:rgba(255,255,255,.045);border-radius:13px;padding:9px 10px;color:#dbeafe;font-size:13px}.setting select{border:1px solid var(--line);background:rgba(3,7,18,.65);color:var(--text);border-radius:9px;padding:5px 7px}.setting input{width:18px;height:18px;accent-color:var(--green)}
+.comfortable .card{min-height:104px;padding:16px}.comfortable .pt-grid .card{min-height:92px}.comfortable .topology,.comfortable .topology svg{min-height:250px;height:250px}
+.search{margin:0;width:100%;display:flex;align-items:center;gap:10px;background:rgba(3,7,18,.66);border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 16px;backdrop-filter:blur(18px);box-shadow:var(--shadow)}
 .search input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);outline:0;font-size:16px}.search input::placeholder{color:#8ea0c4}
 .search button{border:0;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;padding:10px 18px;cursor:pointer;font-weight:700}
 .panel{background:linear-gradient(160deg,rgba(15,23,42,.82),rgba(15,23,42,.52));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(20px)}
@@ -53,23 +54,33 @@ button,input{font:inherit}
 .app-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:#dbeafe;border-radius:999px;padding:6px 9px;font-size:12px;cursor:pointer}.chip.active{background:rgba(56,189,248,.20);border-color:rgba(56,189,248,.55)}.route{margin-top:10px;font-size:12px;color:var(--muted)}.route b{color:#fff}.delete{color:#fecdd3;border-color:rgba(244,63,94,.35)}
 .hidden{display:none!important}.empty{padding:22px;color:var(--muted);text-align:center}
 @media (max-width:1180px){.netbird{grid-template-columns:1fr}.grid{grid-template-columns:repeat(4,1fr)}.pt-grid{grid-template-columns:repeat(5,1fr)}.docker-layout{grid-template-columns:1fr}}
-@media (max-width:760px){.wrap{width:min(100% - 20px,1480px);padding-top:14px}.topbar{align-items:flex-start}.clock strong{font-size:24px}.grid,.grid.wide,.slots{grid-template-columns:repeat(2,1fr)}.pt-grid{grid-template-columns:repeat(3,1fr)}.metric-grid{grid-template-columns:1fr}.topology{min-height:190px}.topology svg{min-height:190px;height:190px}}
+@media (max-width:760px){.wrap{width:min(100% - 20px,1480px);padding-top:14px}.topbar{grid-template-columns:1fr auto auto}.search{grid-column:1/-1;grid-row:2}.settings-panel{grid-template-columns:repeat(2,minmax(0,1fr))}.clock strong{font-size:22px}.grid,.grid.wide,.slots{grid-template-columns:repeat(2,1fr)}.pt-grid{grid-template-columns:repeat(3,1fr)}.metric-grid{grid-template-columns:1fr}.topology{min-height:190px}.topology svg{min-height:190px;height:190px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <main class="wrap">
   <header class="topbar">
-    <div class="brand"><div class="logo" aria-hidden="true">NB</div><div><h1>NetBird Navigation</h1><p>实时组网状态 · 社区 · PT · 我的容器</p></div></div>
-    <div class="clock" aria-label="当前时间"><strong id="clock">--:--</strong><span id="date">--</span></div>
+    <div class="datebox" aria-label="当前日期"><strong id="date">--</strong><span id="weekday">--</span></div>
+    <form class="search" role="search" onsubmit="return false">
+      <input id="search" type="search" placeholder="搜索站点、PT、容器…" autocomplete="off" aria-label="搜索站点、PT、容器" />
+      <button type="button" id="clearSearch">清除</button>
+    </form>
+    <div class="clock" aria-label="当前时间"><strong id="clock">--:--:--</strong></div>
+    <button type="button" class="settings-btn" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">设置</button>
   </header>
 
-  <form class="search" role="search" onsubmit="return false">
-    <input id="search" type="search" placeholder="搜索站点、PT、容器…" autocomplete="off" aria-label="搜索站点、PT、容器" />
-    <button type="button" id="clearSearch">清除</button>
-  </form>
+  <section class="panel settings-panel hidden" id="settingsPanel" aria-label="界面功能设置">
+    <label class="setting"><span>NetBird 面板</span><input type="checkbox" id="setNetbird"></label>
+    <label class="setting"><span>技术社区</span><input type="checkbox" id="setCommunity"></label>
+    <label class="setting"><span>PT 站</span><input type="checkbox" id="setPt"></label>
+    <label class="setting"><span>我的容器</span><input type="checkbox" id="setDocker"></label>
+    <label class="setting"><span>紧凑卡片</span><input type="checkbox" id="setCompact"></label>
+    <label class="setting"><span>NetBird 刷新</span><select id="setRefresh"><option value="2000">2 秒</option><option value="5000">5 秒</option><option value="10000">10 秒</option></select></label>
+    <label class="setting"><span>新容器路线</span><select id="setRoute"><option value="auto">自动</option><option value="lan">内网</option><option value="wan">公网</option></select></label>
+  </section>
 
-  <section class="panel netbird" aria-labelledby="netbirdTitle">
+  <section class="panel netbird" id="netbirdSection" aria-labelledby="netbirdTitle">
     <div>
       <div class="panel-head"><div><h2 id="netbirdTitle">NetBird 实时连接</h2><p>蓝色接收，绿色发送；数值来自 NetBird/WireGuard 计数器。</p></div><span class="badge"><span class="dot"></span><span id="nbState">等待真实数据</span></span></div>
       <div class="topology" aria-label="NetBird 拓扑图">
@@ -98,17 +109,17 @@ button,input{font:inherit}
     </aside>
   </section>
 
-  <section class="section community" aria-labelledby="communityTitle">
+  <section class="section community" id="communitySection" aria-labelledby="communityTitle">
     <div class="section-head"><div><h2 id="communityTitle">技术社区</h2><p>每天要看的两个站，放在最顺手的位置。</p></div></div>
     <div class="grid wide" id="communityGrid"></div>
   </section>
 
-  <section class="section" aria-labelledby="ptTitle">
+  <section class="section" id="ptSection" aria-labelledby="ptTitle">
     <div class="section-head"><div><h2 id="ptTitle">PT 站</h2><p id="ptCount">从 PT.zip 脱敏整理，只保留站名和域名。</p></div></div>
     <div class="grid pt-grid" id="ptGrid"></div>
   </section>
 
-  <section class="section" aria-labelledby="dockerTitle">
+  <section class="section" id="dockerSection" aria-labelledby="dockerTitle">
     <div class="section-head"><div><h2 id="dockerTitle">我的容器</h2><p>位置留给你自己加。每个应用可填内网和公网地址，自动检测优先走内网。</p></div><span class="badge">Auto / LAN / WAN</span></div>
     <div class="docker-layout">
       <div class="slots" id="dockerGrid"></div>
@@ -181,7 +192,7 @@ const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 function initials(name){ return name.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g,'').slice(0,2).toUpperCase() || 'PT'; }
 function fmt(n){ return `${n.toFixed(n >= 10 ? 0 : 1)} Mbps`; }
-function tickClock(){ const d=new Date(); $('#clock').textContent=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}); $('#date').textContent=d.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',weekday:'short'}); }
+function tickClock(){ const d=new Date(); const pad=n=>String(n).padStart(2,'0'); $('#clock').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; $('#date').textContent=`${d.getFullYear()}年${pad(d.getMonth()+1)}月${pad(d.getDate())}日`; $('#weekday').textContent=`星期${'日一二三四五六'[d.getDay()]}`; }
 function renderPeers(){
   const max=Math.max(...peers.flatMap(p=>[p.down,p.up]),1);
   $('#totalDown').textContent=fmt(peers.reduce((a,p)=>a+p.down,0));
@@ -213,6 +224,26 @@ async function loadNetBird(){
 }
 function card(site, cls=''){ return `<a class="card ${cls}" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name} ${site.host}"><div class="icon" aria-hidden="true">${initials(site.name)}</div><h3>${site.name}</h3><p>${site.desc||site.host}</p></a>`; }
 function renderSites(){ $('#communityGrid').innerHTML=COMMUNITY.map(s=>card(s)).join(''); $('#ptGrid').innerHTML=PT_SITES.map(s=>card(s)).join(''); $('#ptCount').textContent=`已整理 ${PT_SITES.length} 个 PT 站，只保留站名和域名。`; }
+
+const defaultSettings={netbird:true,community:true,pt:true,docker:true,compact:true,refresh:2000,route:'auto'};
+let settings={...defaultSettings}; try{ settings={...defaultSettings,...JSON.parse(localStorage.getItem('navSettings')||'{}')}; }catch(e){}
+let netbirdTimer=null;
+function saveSettings(){ localStorage.setItem('navSettings', JSON.stringify(settings)); }
+function startNetBirdTimer(){ if(netbirdTimer) clearInterval(netbirdTimer); netbirdTimer=setInterval(loadNetBird, Number(settings.refresh)||2000); }
+function applySettings(){
+  $('#netbirdSection').classList.toggle('hidden', !settings.netbird);
+  $('#communitySection').classList.toggle('hidden', !settings.community);
+  $('#ptSection').classList.toggle('hidden', !settings.pt);
+  $('#dockerSection').classList.toggle('hidden', !settings.docker);
+  document.body.classList.toggle('comfortable', !settings.compact);
+  $('#setNetbird').checked=!!settings.netbird; $('#setCommunity').checked=!!settings.community; $('#setPt').checked=!!settings.pt; $('#setDocker').checked=!!settings.docker; $('#setCompact').checked=!!settings.compact;
+  $('#setRefresh').value=String(settings.refresh); $('#setRoute').value=settings.route;
+  startNetBirdTimer();
+}
+$('#settingsToggle').addEventListener('click',()=>{ const panel=$('#settingsPanel'); const open=panel.classList.toggle('hidden')===false; $('#settingsToggle').setAttribute('aria-expanded', String(open)); });
+[['setNetbird','netbird'],['setCommunity','community'],['setPt','pt'],['setDocker','docker'],['setCompact','compact']].forEach(([id,key])=>{ $('#'+id).addEventListener('change',e=>{ settings[key]=e.target.checked; saveSettings(); applySettings(); }); });
+$('#setRefresh').addEventListener('change',e=>{ settings.refresh=Number(e.target.value); saveSettings(); applySettings(); });
+$('#setRoute').addEventListener('change',e=>{ settings.route=e.target.value; saveSettings(); });
 let configApps=[]; let apps=[]; try{ apps=JSON.parse(localStorage.getItem('navDockerApps')||'[]'); }catch(e){ apps=[]; }
 async function loadConfig(){ for(const url of ['local/config.json','config.json']){ try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) continue; const cfg=await r.json(); if(Array.isArray(cfg.ptSites)) PT_SITES=cfg.ptSites; if(Array.isArray(cfg.community)) COMMUNITY=cfg.community; if(Array.isArray(cfg.peerMeta)) PEER_META=cfg.peerMeta; if(Array.isArray(cfg.dockerApps)) configApps=cfg.dockerApps; peers=PEER_META.map(p=>({...p,down:0,up:0,latency:0,connected:false})); return; }catch(e){} } }
 function saveApps(){ localStorage.setItem('navDockerApps', JSON.stringify(apps)); }
@@ -232,11 +263,11 @@ async function renderApps(){
   grid.innerHTML=allApps.map((a,i)=>`<article class="card" data-search="${a.name} ${a.lan} ${a.wan}"><div class="icon" aria-hidden="true">${initials(a.name)}</div><h3>${a.name}</h3><p>${a.lan||'未填内网'}<br>${a.wan||'未填公网'}</p><div class="route">当前路线：<b id="route-${i}">检测中…</b></div><div class="app-actions"><button class="chip ${a.mode==='auto'?'active':''}" data-act="auto" data-i="${i}">自动</button><button class="chip ${a.mode==='lan'?'active':''}" data-act="lan" data-i="${i}">内网</button><button class="chip ${a.mode==='wan'?'active':''}" data-act="wan" data-i="${i}">公网</button><button class="chip" data-act="open" data-i="${i}">打开</button><button class="chip delete" data-act="del" data-i="${i}">删除</button></div></article>`).join('');
   allApps.forEach(async(a,i)=>{ const r=await detectRoute(a); const el=$('#route-'+i); if(el) el.textContent=r==='lan'?'内网':'公网'; a._route=r; });
 }
-$('#appForm').addEventListener('submit',e=>{ e.preventDefault(); const name=$('#appName').value.trim(); if(!name) return; apps.push({name,lan:normUrl($('#appLan').value.trim()),wan:normUrl($('#appWan').value.trim()),mode:'auto'}); saveApps(); e.target.reset(); renderApps(); });
+$('#appForm').addEventListener('submit',e=>{ e.preventDefault(); const name=$('#appName').value.trim(); if(!name) return; apps.push({name,lan:normUrl($('#appLan').value.trim()),wan:normUrl($('#appWan').value.trim()),mode:settings.route||'auto'}); saveApps(); e.target.reset(); renderApps(); });
 $('#dockerGrid').addEventListener('click',async e=>{ const btn=e.target.closest('button[data-act]'); if(!btn) return; const i=Number(btn.dataset.i); const a=[...configApps, ...apps][i]; if(!a) return; const act=btn.dataset.act; if(act==='del'){ if(i>=configApps.length){ apps.splice(i-configApps.length,1); saveApps(); } renderApps(); return; } if(['auto','lan','wan'].includes(act)){ a.mode=act; saveApps(); renderApps(); return; } if(act==='open'){ const r=await detectRoute(a); const url=r==='lan'?a.lan:a.wan; if(url) window.open(url,'_blank','noopener'); } });
 function applySearch(){ const q=$('#search').value.trim().toLowerCase(); $$('[data-search]').forEach(el=>{ el.classList.toggle('hidden', !!q && !el.dataset.search.toLowerCase().includes(q)); }); }
 $('#search').addEventListener('input',applySearch); $('#clearSearch').addEventListener('click',()=>{ $('#search').value=''; applySearch(); $('#search').focus(); });
-tickClock(); setInterval(tickClock,10000); loadConfig().then(()=>{ renderSites(); renderApps(); renderPeers(); loadNetBird(); }); setInterval(loadNetBird,2000);
+tickClock(); setInterval(tickClock,1000); applySettings(); loadConfig().then(()=>{ renderSites(); renderApps(); renderPeers(); loadNetBird(); });
 </script>
 </body>
 </html>
