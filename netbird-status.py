@@ -144,7 +144,7 @@ def peers_from_table(command):
             "rxBytes": parse_size(size_match.group(1)),
             "txBytes": parse_size(size_match.group(2)),
             "latency": latency_match.group(1) if latency_match else 0,
-            "connected": "Connected" in line or "P2P" in line or "Relayed" in line,
+            "connected": not ("Connecting" in line or "Disconnected" in line or "Idle" in line),
         }))
     return peers
 
