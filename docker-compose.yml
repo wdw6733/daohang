@@ -8,5 +8,6 @@ services:
       - "${NAV_PORT:-28888}:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./local-config:/app/site/local:ro
     environment:
       NETBIRD_INTERVAL: "2"
