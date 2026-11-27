@@ -1,9 +1,9 @@
 services:
   nav:
-    build: .
-    image: nav-custom:local
+    image: ghcr.io/wdw6733/daohang:latest
     container_name: nav-custom
     restart: unless-stopped
+    pull_policy: always
     ports:
       - "${NAV_PORT:-28888}:8080"
     volumes:
