@@ -4,11 +4,9 @@
 
 ## 部署
 
-先克隆整个仓库，不要只复制 `docker-compose.yml`。启动前确认配置文件存在，并让 Dashy 的 uid 1000 能读写：
+先克隆整个仓库，不要只复制 `docker-compose.yml`。仓库里已有模板配置 `user-data/conf.yml`；启动时 `init-config` 会检查它是否存在，缺失时自动补一份默认配置并修正权限，已有配置不会被覆盖：
 
 ```bash
-test -f user-data/conf.yml
-chown -R 1000:1000 user-data
 docker compose up -d
 ```
 
