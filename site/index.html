@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NetBird Navigation</title>
+<style>
+:root{
+  --bg:#050816; --panel:rgba(10,18,38,.72); --panel2:rgba(255,255,255,.07);
+  --text:#f4f7ff; --muted:#a9b7d6; --line:rgba(148,197,255,.22);
+  --blue:#38bdf8; --green:#34d399; --pink:#ec4899; --violet:#8b5cf6; --amber:#fbbf24;
+  --radius:24px; --shadow:0 24px 80px rgba(0,0,0,.42);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:
+  radial-gradient(900px 520px at 12% 8%,rgba(59,130,246,.42),transparent 60%),
+  radial-gradient(820px 520px at 88% 0%,rgba(14,165,233,.34),transparent 58%),
+  radial-gradient(900px 620px at 8% 92%,rgba(236,72,153,.38),transparent 62%),
+  radial-gradient(760px 560px at 92% 88%,rgba(139,92,246,.30),transparent 60%),
+  linear-gradient(135deg,#050816 0%,#07122e 46%,#160826 100%);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.34;background-image:radial-gradient(rgba(255,255,255,.75) .7px,transparent .7px);background-size:34px 34px;mask-image:linear-gradient(to bottom,black,transparent 82%)}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+:focus-visible{outline:3px solid rgba(56,189,248,.85);outline-offset:3px;border-radius:12px}
+.wrap{width:min(1480px,calc(100% - 32px));margin:0 auto;padding:22px 0 44px;position:relative}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:4px 0 18px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--green));display:grid;place-items:center;box-shadow:0 12px 34px rgba(56,189,248,.28);font-weight:900;color:#04101f}
+.brand h1{font-size:20px;margin:0;letter-spacing:.02em}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.clock{text-align:right}.clock strong{display:block;font-size:30px;line-height:1}.clock span{color:var(--muted);font-size:13px}
+.search{margin:0 auto 20px;max-width:780px;display:flex;align-items:center;gap:10px;background:rgba(3,7,18,.66);border:1px solid var(--line);border-radius:999px;padding:8px 10px 8px 18px;backdrop-filter:blur(18px);box-shadow:var(--shadow)}
+.search input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);outline:0;font-size:16px}.search input::placeholder{color:#8ea0c4}
+.search button{border:0;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;padding:10px 18px;cursor:pointer;font-weight:700}
+.panel{background:linear-gradient(160deg,rgba(15,23,42,.82),rgba(15,23,42,.52));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(20px)}
+.netbird{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.85fr);gap:18px;padding:18px;margin-bottom:20px}
+.panel-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:10px}.panel-head h2{margin:0;font-size:22px}.panel-head p{margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.badge{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#dbeafe;background:rgba(255,255,255,.06);font-size:12px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+.topology{min-height:360px;border-radius:20px;background:radial-gradient(circle at 50% 48%,rgba(56,189,248,.20),transparent 34%),linear-gradient(160deg,rgba(2,6,23,.72),rgba(15,23,42,.42));border:1px solid rgba(148,197,255,.16);overflow:hidden}
+.topology svg{width:100%;height:100%;min-height:360px;display:block}.link{fill:none;stroke-linecap:round;opacity:.92}.link.down{stroke:var(--blue)}.link.up{stroke:var(--green)}.link.mixed{stroke:#a78bfa}.link.off{stroke:#475569;opacity:.45}
+.node rect{fill:rgba(8,15,35,.88);stroke:rgba(125,211,252,.55);stroke-width:1.2}.node text{fill:#eaf2ff;font-size:13px;font-weight:700}.node .sub{fill:#9fb3d9;font-size:11px;font-weight:500}.core circle{fill:rgba(6,40,38,.92);stroke:rgba(52,211,153,.75);stroke-width:1.4}.core text{fill:#ecfdf5;font-size:15px;font-weight:800}
+.metrics{display:grid;gap:12px}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{border:1px solid rgba(148,197,255,.16);background:rgba(255,255,255,.055);border-radius:18px;padding:14px}.metric span{color:var(--muted);font-size:12px}.metric strong{display:block;font-size:26px;margin-top:4px}.metric.down strong{color:var(--blue)}.metric.up strong{color:var(--green)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px}.legend i{display:inline-block;width:22px;height:4px;border-radius:99px;vertical-align:middle;margin-right:6px}.legend .d i{background:var(--blue)}.legend .u i{background:var(--green)}
+.peer{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 12px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(148,197,255,.12)}.peer b{font-size:14px}.peer small{display:block;color:var(--muted);margin-top:2px}.peer .nums{text-align:right;font-size:12px;line-height:1.55}.peer .nums .d{color:var(--blue)}.peer .nums .u{color:var(--green)}.bars{grid-column:1/-1;display:grid;gap:5px}.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar i{display:block;height:100%;border-radius:99px}.bar .bd{background:linear-gradient(90deg,#0284c7,var(--blue))}.bar .bu{background:linear-gradient(90deg,#059669,var(--green))}
+.section{margin-top:22px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:0 2px 12px}.section-head h2{margin:0;font-size:22px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}.grid.wide{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{min-height:118px;padding:16px;border-radius:22px;background:linear-gradient(155deg,rgba(255,255,255,.10),rgba(255,255,255,.045));border:1px solid rgba(148,197,255,.16);box-shadow:0 16px 44px rgba(0,0,0,.24);transition:transform .18s ease,border-color .18s ease,background .18s ease}.card:hover{transform:translateY(-3px);border-color:rgba(125,211,252,.48);background:linear-gradient(155deg,rgba(255,255,255,.14),rgba(255,255,255,.06))}
+.icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-weight:900;color:#06111f;background:linear-gradient(135deg,#bae6fd,#a7f3d0);margin-bottom:12px}.card h3{margin:0 0 5px;font-size:16px;line-height:1.25;overflow-wrap:anywhere}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.community .card{min-height:142px}.community .icon{width:56px;height:56px;border-radius:18px;font-size:20px}
+.pt-grid{grid-template-columns:repeat(7,minmax(0,1fr))}.pt-grid .card{min-height:104px;padding:13px}.pt-grid .icon{width:38px;height:38px;border-radius:12px;font-size:13px}.pt-grid h3{font-size:14px}
+.docker-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.slot{border-style:dashed;display:grid;place-items:center;text-align:center;color:var(--muted)}.slot strong{color:#dbeafe;display:block;margin-bottom:6px}
+.form{padding:16px}.form h3{margin:0 0 12px}.field{display:grid;gap:6px;margin-bottom:10px}.field label{font-size:12px;color:var(--muted)}.field input{width:100%;border:1px solid var(--line);background:rgba(3,7,18,.55);color:var(--text);border-radius:13px;padding:11px 12px;outline:0}.primary{width:100%;border:0;border-radius:14px;padding:12px;background:linear-gradient(135deg,var(--green),var(--blue));color:#04101f;font-weight:900;cursor:pointer}.hint{color:var(--muted);font-size:12px;line-height:1.6;margin:10px 0 0}
+.app-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:#dbeafe;border-radius:999px;padding:6px 9px;font-size:12px;cursor:pointer}.chip.active{background:rgba(56,189,248,.20);border-color:rgba(56,189,248,.55)}.route{margin-top:10px;font-size:12px;color:var(--muted)}.route b{color:#fff}.delete{color:#fecdd3;border-color:rgba(244,63,94,.35)}
+.hidden{display:none!important}.empty{padding:22px;color:var(--muted);text-align:center}
+@media (max-width:1180px){.netbird{grid-template-columns:1fr}.grid{grid-template-columns:repeat(4,1fr)}.pt-grid{grid-template-columns:repeat(5,1fr)}.docker-layout{grid-template-columns:1fr}}
+@media (max-width:760px){.wrap{width:min(100% - 20px,1480px);padding-top:14px}.topbar{align-items:flex-start}.clock strong{font-size:24px}.grid,.grid.wide,.slots{grid-template-columns:repeat(2,1fr)}.pt-grid{grid-template-columns:repeat(3,1fr)}.metric-grid{grid-template-columns:1fr}.topology{min-height:300px}.topology svg{min-height:300px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="topbar">
+    <div class="brand"><div class="logo" aria-hidden="true">NB</div><div><h1>NetBird Navigation</h1><p>实时组网状态 · 社区 · PT · 我的容器</p></div></div>
+    <div class="clock" aria-label="当前时间"><strong id="clock">--:--</strong><span id="date">--</span></div>
+  </header>
+
+  <form class="search" role="search" onsubmit="return false">
+    <input id="search" type="search" placeholder="搜索站点、PT、容器…" autocomplete="off" aria-label="搜索站点、PT、容器" />
+    <button type="button" id="clearSearch">清除</button>
+  </form>
+
+  <section class="panel netbird" aria-labelledby="netbirdTitle">
+    <div>
+      <div class="panel-head"><div><h2 id="netbirdTitle">NetBird 实时连接</h2><p>蓝色为接收流量，绿色为发送流量。数值来自 NetBird/WireGuard 计数器，由采集脚本写入同目录 <code>netbird-status.json</code>；没有真实数据时显示未连接，不生成假流量。</p></div><span class="badge"><span class="dot"></span><span id="nbState">等待真实数据</span></span></div>
+      <div class="topology" aria-label="NetBird 拓扑图">
+        <svg viewBox="0 0 920 420" role="img" aria-label="NetBird WireGuard Mesh 拓扑">
+          <path class="link down" id="link-oracle" d="M460 210 L460 82" stroke-width="3"/>
+          <path class="link down" id="link-aws" d="M460 210 C360 190 280 150 190 118" stroke-width="3"/>
+          <path class="link up" id="link-gcp1" d="M460 210 C350 210 270 210 190 210" stroke-width="3"/>
+          <path class="link down" id="link-gcp2" d="M460 210 C360 232 280 268 190 302" stroke-width="3"/>
+          <path class="link up" id="link-desktop" d="M460 210 C570 190 650 150 735 118" stroke-width="3"/>
+          <path class="link mixed" id="link-nas" d="M460 210 C570 210 650 210 735 210" stroke-width="3"/>
+          <path class="link up" id="link-router" d="M460 210 C570 232 650 268 735 302" stroke-width="3"/>
+          <g class="core"><circle cx="460" cy="210" r="58"/><text x="460" y="204" text-anchor="middle">WireGuard</text><text x="460" y="226" text-anchor="middle">Mesh</text></g>
+          <g class="node"><rect x="370" y="28" width="180" height="58" rx="16"/><text x="390" y="52">控制面</text><text class="sub" x="390" y="72">10.99.0.10 · Dashboard/API</text></g>
+          <g class="node"><rect x="42" y="88" width="180" height="58" rx="16"/><text x="62" y="112">Worker-1</text><text class="sub" x="62" y="132">10.99.0.11 · K3s</text></g>
+          <g class="node"><rect x="42" y="181" width="180" height="58" rx="16"/><text x="62" y="205">Worker-2</text><text class="sub" x="62" y="225">10.99.0.12 · K3s</text></g>
+          <g class="node"><rect x="42" y="274" width="180" height="58" rx="16"/><text x="62" y="298">Worker-3</text><text class="sub" x="62" y="318">10.99.0.13 · K3s</text></g>
+          <g class="node"><rect x="698" y="88" width="180" height="58" rx="16"/><text x="718" y="112">Desktop</text><text class="sub" x="718" y="132">10.99.0.14 · servers</text></g>
+          <g class="node"><rect x="698" y="181" width="180" height="58" rx="16"/><text x="718" y="205">NAS Peer</text><text class="sub" x="718" y="225">10.99.0.15 · TrueNAS</text></g>
+          <g class="node"><rect x="698" y="274" width="180" height="58" rx="16"/><text x="718" y="298">Router</text><text class="sub" x="718" y="318">10.99.0.16 · LAN 路由</text></g>
+        </svg>
+      </div>
+    </div>
+    <aside class="metrics" aria-label="NetBird 流量指标">
+      <div class="metric-grid"><div class="metric down"><span>总接收</span><strong id="totalDown">0 Mbps</strong></div><div class="metric up"><span>总发送</span><strong id="totalUp">0 Mbps</strong></div></div>
+      <div class="legend"><span class="d"><i></i>接收 / 下载</span><span class="u"><i></i>发送 / 上传</span><span>更新：<b id="updatedAt">--</b></span></div>
+      <div id="peerList"></div>
+    </aside>
+  </section>
+
+  <section class="section community" aria-labelledby="communityTitle">
+    <div class="section-head"><div><h2 id="communityTitle">技术社区</h2><p>每天要看的两个站，放在最顺手的位置。</p></div></div>
+    <div class="grid wide" id="communityGrid"></div>
+  </section>
+
+  <section class="section" aria-labelledby="ptTitle">
+    <div class="section-head"><div><h2 id="ptTitle">PT 站</h2><p id="ptCount">从 PT.zip 脱敏整理，只保留站名和域名。</p></div></div>
+    <div class="grid pt-grid" id="ptGrid"></div>
+  </section>
+
+  <section class="section" aria-labelledby="dockerTitle">
+    <div class="section-head"><div><h2 id="dockerTitle">我的容器</h2><p>位置留给你自己加。每个应用可填内网和公网地址，自动检测优先走内网。</p></div><span class="badge">Auto / LAN / WAN</span></div>
+    <div class="docker-layout">
+      <div class="slots" id="dockerGrid"></div>
+      <form class="panel form" id="appForm">
+        <h3>添加容器应用</h3>
+        <div class="field"><label for="appName">名称</label><input id="appName" required placeholder="例如：Transmission" /></div>
+        <div class="field"><label for="appLan">内网地址</label><input id="appLan" placeholder="http://192.168.124.251:9091" /></div>
+        <div class="field"><label for="appWan">公网地址</label><input id="appWan" placeholder="https://example.com" /></div>
+        <button class="primary" type="submit">添加到导航</button>
+        <p class="hint">自动检测为浏览器 best-effort：先探内网，通则走内网，不通走公网。正式部署时建议再接一个 NAS 小接口做服务端探活，结果更稳。</p>
+      </form>
+    </div>
+  </section>
+</main>
+<script>
+const PT_SITES = [
+  {
+    "id": "pt-general",
+    "name": "PT 综合示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  },
+  {
+    "id": "pt-movie",
+    "name": "PT 影视示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  },
+  {
+    "id": "pt-music",
+    "name": "PT 音乐示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  },
+  {
+    "id": "pt-anime",
+    "name": "PT 动漫示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  },
+  {
+    "id": "pt-seed",
+    "name": "PT 保种示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  },
+  {
+    "id": "pt-checkin",
+    "name": "PT 签到示例",
+    "host": "example.com",
+    "url": "https://example.com/"
+  }
+];
+const COMMUNITY = [
+  {name:'linux.do', host:'linux.do', url:'https://linux.do', desc:'技术社区 · 每日阅读'},
+  {name:'linux.sb', host:'linux.sb', url:'https://linux.sb', desc:'烧饼社区 · 每日阅读'}
+];
+const PEER_META = [
+  {id:'oracle', name:'控制面', ip:'10.99.0.10', role:'Dashboard / API / STUN'},
+  {id:'aws', name:'Worker-1', ip:'10.99.0.11', role:'K3s worker'},
+  {id:'gcp1', name:'Worker-2', ip:'10.99.0.12', role:'K3s worker'},
+  {id:'gcp2', name:'Worker-3', ip:'10.99.0.13', role:'K3s worker'},
+  {id:'desktop', name:'Desktop', ip:'10.99.0.14', role:'Desktop · servers'},
+  {id:'nas', name:'NAS Peer', ip:'10.99.0.15', role:'NAS / Docker'},
+  {id:'router', name:'Router', ip:'10.99.0.16', role:'Routing Peer'}
+];
+let peers = PEER_META.map(p => ({...p, down:0, up:0, latency:0, connected:false}));
+let prevCounters = new Map(); let prevTime = 0;
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+function initials(name){ return name.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g,'').slice(0,2).toUpperCase() || 'PT'; }
+function fmt(n){ return `${n.toFixed(n >= 10 ? 0 : 1)} Mbps`; }
+function tickClock(){ const d=new Date(); $('#clock').textContent=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}); $('#date').textContent=d.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',weekday:'short'}); }
+function renderPeers(){
+  const max=Math.max(...peers.flatMap(p=>[p.down,p.up]),1);
+  $('#totalDown').textContent=fmt(peers.reduce((a,p)=>a+p.down,0));
+  $('#totalUp').textContent=fmt(peers.reduce((a,p)=>a+p.up,0));
+  $('#peerList').innerHTML=peers.map(p=>`<article class="peer"><div><b>${p.name}</b><small>${p.ip} · ${p.role}${p.connected ? ' · ' + p.latency + 'ms' : ' · 未连接采集器'}</small></div><div class="nums"><span class="d">↓ ${fmt(p.down)}</span><br><span class="u">↑ ${fmt(p.up)}</span></div><div class="bars"><div class="bar"><i class="bd" style="width:${p.down ? Math.max(4,p.down/max*100) : 0}%"></i></div><div class="bar"><i class="bu" style="width:${p.up ? Math.max(4,p.up/max*100) : 0}%"></i></div></div></article>`).join('');
+  peers.forEach(p=>{ const el=$('#link-'+p.id); if(el){ const total=p.down+p.up; el.setAttribute('stroke-width', String(total ? 2 + Math.min(5,total/18) : 2)); el.classList.toggle('off', !p.connected); el.classList.toggle('down', p.connected && p.down>=p.up); el.classList.toggle('up', p.connected && p.up>p.down); }});
+}
+function peerId(p){ const byIp=PEER_META.find(m=>m.ip===p.ip); if(byIp) return byIp.id; const name=String(p.name||p.hostname||'').toLowerCase(); if(name.includes('oracle')||name.includes('control')) return 'oracle'; if(name.includes('aws')) return 'aws'; if(name.includes('gcp')&&name.includes('2')) return 'gcp2'; if(name.includes('gcp')) return 'gcp1'; if(name.includes('desktop')||name.includes('windows')) return 'desktop'; if(name.includes('nas')) return 'nas'; if(name.includes('istoreos')||name.includes('router')) return 'router'; return p.id || name.replace(/[^a-z0-9]+/g,'-') || 'peer'; }
+function rateFromCounters(p, now){
+  const id=peerId(p); const rx=Number(p.rxBytes ?? p.bytesReceived ?? p.receivedBytes ?? NaN); const tx=Number(p.txBytes ?? p.bytesSent ?? p.sentBytes ?? NaN);
+  if(!Number.isFinite(rx) || !Number.isFinite(tx) || !prevTime) return {down:0, up:0};
+  const prev=prevCounters.get(id); const dt=(now-prevTime)/1000; if(!prev || dt<=0) return {down:0, up:0};
+  return {down:Math.max(0,(rx-prev.rx)*8/dt/1e6), up:Math.max(0,(tx-prev.tx)*8/dt/1e6)};
+}
+async function loadNetBird(){
+  for(const url of ['netbird-status.json','/api/netbird-status']){
+    try{
+      const r=await fetch(url,{cache:'no-store'}); if(!r.ok) continue; const data=await r.json(); const list=data.peers||data; if(!Array.isArray(list)||!list.length) continue;
+      const now=Date.now();
+      peers=PEER_META.map(meta=>{
+        const p=list.find(x=>peerId(x)===meta.id || x.ip===meta.ip) || {};
+        const directDown=Number(p.downMbps ?? p.down ?? p.rxRateMbps ?? NaN); const directUp=Number(p.upMbps ?? p.up ?? p.txRateMbps ?? NaN);
+        const rates=(Number.isFinite(directDown)||Number.isFinite(directUp)) ? {down:directDown||0, up:directUp||0} : rateFromCounters(p, now);
+        return {...meta, name:p.name||meta.name, ip:p.ip||meta.ip, role:p.role||meta.role, down:rates.down, up:rates.up, latency:Number(p.latency||0), connected:p.connected !== false && Object.keys(p).length>0};
+      });
+      list.forEach(p=>{ const rx=Number(p.rxBytes ?? p.bytesReceived ?? p.receivedBytes ?? NaN); const tx=Number(p.txBytes ?? p.bytesSent ?? p.sentBytes ?? NaN); if(Number.isFinite(rx)&&Number.isFinite(tx)) prevCounters.set(peerId(p),{rx,tx}); });
+      prevTime=now; $('#nbState').textContent='真实数据'; $('#updatedAt').textContent=new Date(data.generatedAt||now).toLocaleTimeString('zh-CN',{hour12:false}); renderPeers(); return;
+    }catch(e){}
+  }
+  peers=PEER_META.map(p=>({...p,down:0,up:0,latency:0,connected:false})); $('#nbState').textContent='未连接采集器'; $('#updatedAt').textContent='--'; renderPeers();
+}
+function card(site, cls=''){ return `<a class="card ${cls}" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name} ${site.host}"><div class="icon" aria-hidden="true">${initials(site.name)}</div><h3>${site.name}</h3><p>${site.desc||site.host}</p></a>`; }
+function renderSites(){ $('#communityGrid').innerHTML=COMMUNITY.map(s=>card(s)).join(''); $('#ptGrid').innerHTML=PT_SITES.map(s=>card(s)).join(''); $('#ptCount').textContent=`已整理 ${PT_SITES.length} 个 PT 站，只保留站名和域名。`; }
+let apps=[]; try{ apps=JSON.parse(localStorage.getItem('navDockerApps')||'[]'); }catch(e){ apps=[]; }
+function saveApps(){ localStorage.setItem('navDockerApps', JSON.stringify(apps)); }
+function normUrl(u){ if(!u) return ''; return /^https?:\/\//i.test(u)?u:'http://'+u; }
+async function probe(url){
+  if(!url) return false;
+  const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),1300);
+  try{ await fetch(url,{mode:'no-cors',cache:'no-store',signal:ctl.signal}); clearTimeout(t); return true; }catch(e){ clearTimeout(t); return false; }
+}
+async function detectRoute(app){
+  if(app.mode==='lan') return 'lan'; if(app.mode==='wan') return 'wan';
+  const lanOk=await probe(app.lan); return lanOk ? 'lan' : 'wan';
+}
+async function renderApps(){
+  const grid=$('#dockerGrid');
+  if(!apps.length){ grid.innerHTML=Array.from({length:6},(_,i)=>`<div class="card slot" data-search="容器 空位"><div><strong>容器空位 ${i+1}</strong>在右侧添加名称、内网和公网地址</div></div>`).join(''); return; }
+  grid.innerHTML=apps.map((a,i)=>`<article class="card" data-search="${a.name} ${a.lan} ${a.wan}"><div class="icon" aria-hidden="true">${initials(a.name)}</div><h3>${a.name}</h3><p>${a.lan||'未填内网'}<br>${a.wan||'未填公网'}</p><div class="route">当前路线：<b id="route-${i}">检测中…</b></div><div class="app-actions"><button class="chip ${a.mode==='auto'?'active':''}" data-act="auto" data-i="${i}">自动</button><button class="chip ${a.mode==='lan'?'active':''}" data-act="lan" data-i="${i}">内网</button><button class="chip ${a.mode==='wan'?'active':''}" data-act="wan" data-i="${i}">公网</button><button class="chip" data-act="open" data-i="${i}">打开</button><button class="chip delete" data-act="del" data-i="${i}">删除</button></div></article>`).join('');
+  apps.forEach(async(a,i)=>{ const r=await detectRoute(a); const el=$('#route-'+i); if(el) el.textContent=r==='lan'?'内网':'公网'; a._route=r; });
+}
+$('#appForm').addEventListener('submit',e=>{ e.preventDefault(); const name=$('#appName').value.trim(); if(!name) return; apps.push({name,lan:normUrl($('#appLan').value.trim()),wan:normUrl($('#appWan').value.trim()),mode:'auto'}); saveApps(); e.target.reset(); renderApps(); });
+$('#dockerGrid').addEventListener('click',async e=>{ const btn=e.target.closest('button[data-act]'); if(!btn) return; const i=Number(btn.dataset.i); const a=apps[i]; if(!a) return; const act=btn.dataset.act; if(act==='del'){ apps.splice(i,1); saveApps(); renderApps(); return; } if(['auto','lan','wan'].includes(act)){ a.mode=act; saveApps(); renderApps(); return; } if(act==='open'){ const r=await detectRoute(a); const url=r==='lan'?a.lan:a.wan; if(url) window.open(url,'_blank','noopener'); } });
+function applySearch(){ const q=$('#search').value.trim().toLowerCase(); $$('[data-search]').forEach(el=>{ el.classList.toggle('hidden', !!q && !el.dataset.search.toLowerCase().includes(q)); }); }
+$('#search').addEventListener('input',applySearch); $('#clearSearch').addEventListener('click',()=>{ $('#search').value=''; applySearch(); $('#search').focus(); });
+tickClock(); setInterval(tickClock,10000); renderSites(); renderApps(); renderPeers(); loadNetBird(); setInterval(loadNetBird,2000);
+</script>
+</body>
+</html>

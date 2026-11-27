@@ -1,32 +1,12 @@
 services:
-  init-config:
-    image: lissy93/dashy:latest
-    container_name: nav-dashy-init
-    pull_policy: always
-    entrypoint: ["sh", "-c"]
-    command: ["test -f /target/conf.yml || cp /app/user-data/conf.yml /target/conf.yml; chown -R 1000:1000 /target || true; chmod 755 /target; chmod 644 /target/conf.yml || true"]
-    volumes:
-      - ./user-data:/target
-
-  dashy:
-    image: lissy93/dashy:latest
-    container_name: nav-dashy
+  nav:
+    build: .
+    image: nav-custom:local
+    container_name: nav-custom
     restart: unless-stopped
-    pull_policy: always
-    depends_on:
-      init-config:
-        condition: service_completed_successfully
     ports:
-      - "${DASHY_PORT:-3000}:8080"
+      - "${NAV_PORT:-28888}:8080"
     volumes:
-      - type: bind
-        source: ./user-data
-        target: /app/user-data
-        bind:
-          create_host_path: false
-    healthcheck:
-      test: ["CMD", "node", "/app/services/healthcheck"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      NETBIRD_INTERVAL: "2"
