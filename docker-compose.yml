@@ -1,6 +1,6 @@
 services:
   dashy:
-    image: lissy93/dashy:4.10.2
+    image: lissy93/dashy:latest
     container_name: nav-dashy
     restart: unless-stopped
     pull_policy: always
