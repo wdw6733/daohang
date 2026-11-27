@@ -6,7 +6,7 @@
 
 ```bash
 
-docker compose up -d --build
+docker compose up -d
 ```
 
 默认端口 `28888`。如果端口被占用，在 `.env` 写 `NAV_PORT=28889`。
