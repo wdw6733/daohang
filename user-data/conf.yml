@@ -1,10 +1,6 @@
 pageInfo:
   title: 导航页
   description: Docker 应用、PT站与技术社区一页入口
-  navLinks:
-    - title: GitHub
-      path: https://github.com
-      target: newtab
 
 appConfig:
   theme: colorful
@@ -17,6 +13,9 @@ appConfig:
   webSearch:
     searchEngine: duckduckgo
     openingMethod: newtab
+  hideComponents:
+    hideHeading: true
+    hideNav: true
 
 sections:
   - name: 常用入口
