@@ -1,0 +1,20 @@
+services:
+  dashy:
+    image: lissy93/dashy:4.10.0
+    container_name: nav-dashy
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "3000:8080"
+    volumes:
+      - type: bind
+        source: ./user-data
+        target: /app/user-data
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD", "node", "/app/services/healthcheck"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
