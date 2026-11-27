@@ -88,8 +88,11 @@ def normalize_peer(raw):
     latency_raw = first_value(raw, ["latency", "latencyMs", "latency_ms", "ping"])
     latency = 0
     if latency_raw is not None:
-        m = re.search(r"[0-9]+(?:\.[0-9]+)?", str(latency_raw))
-        latency = int(float(m.group(0))) if m else 0
+        if isinstance(latency_raw, (int, float)):
+            latency = int(latency_raw / 1_000_000) if latency_raw > 100_000 else int(latency_raw)
+        else:
+            m = re.search(r"[0-9]+(?:\.[0-9]+)?", str(latency_raw))
+            latency = int(float(m.group(0))) if m else 0
     connected_raw = first_value(raw, ["connected", "status", "connectionStatus"])
     connected = True
     if isinstance(connected_raw, bool):
@@ -176,6 +179,41 @@ def collect_peers(json_command, table_command):
     return list(by_key.values())
 
 
+def interface_counters(command="docker exec netbird cat /proc/net/dev"):
+    try:
+        result = run(command)
+    except Exception:
+        return None
+    if result.returncode != 0:
+        return None
+    for line in result.stdout.splitlines():
+        if ":" not in line:
+            continue
+        name, rest = line.split(":", 1)
+        if name.strip() != "wt0":
+            continue
+        fields = rest.split()
+        if len(fields) < 9:
+            return None
+        return {"name": "wt0", "rxBytes": int(fields[0]), "txBytes": int(fields[8])}
+    return None
+
+def interface_rates(interface, previous, previous_time, now):
+    if not interface:
+        return None
+    rx = interface["rxBytes"]
+    tx = interface["txBytes"]
+    down = up = 0.0
+    prev = previous.get("__interface__")
+    if prev and previous_time:
+        dt = now - previous_time
+        if dt > 0:
+            down = max(0.0, (rx - prev[0]) * 8 / dt / 1e6)
+            up = max(0.0, (tx - prev[1]) * 8 / dt / 1e6)
+    previous["__interface__"] = (rx, tx)
+    return {**interface, "downMbps": round(down, 3), "upMbps": round(up, 3)}
+
+
 def collect(args, previous, previous_time):
     peers = collect_peers(args.command, args.table_command)
     now = time.time()
@@ -196,6 +234,7 @@ def collect(args, previous, previous_time):
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "source": "netbird status counters",
         "peers": out,
+        "interface": interface_rates(interface_counters(), previous, previous_time, now),
     }
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
