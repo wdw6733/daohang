@@ -194,7 +194,8 @@ let PEER_META = [
   {id:'nas', name:'NAS Peer', ip:'10.99.0.15', role:'NAS / Docker'},
   {id:'router', name:'Router', ip:'10.99.0.16', role:'Routing Peer'}
 ];
-let peers = PEER_META.map(p => ({...p, down:0, up:0, latency:0, connected:false}));
+let peers = PEER_META.map(p => ({...p, down:0, up:0, rx:0, tx:0, latency:0, connected:false}));
+let interfaceStats = null;
 let prevCounters = new Map(); let prevTime = 0;
 const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
@@ -204,9 +205,10 @@ function fmtBytes(n){ const units=['B','KB','MB','GB','TB']; let v=Number(n)||0;
 function tickClock(){ const d=new Date(); const pad=n=>String(n).padStart(2,'0'); $('#clock').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; $('#date').textContent=`${d.getFullYear()}年${pad(d.getMonth()+1)}月${pad(d.getDate())}日`; $('#weekday').textContent=`星期${'日一二三四五六'[d.getDay()]}`; }
 function renderPeers(){
   const max=Math.max(...peers.flatMap(p=>[p.down,p.up]),0.001);
-  $('#totalDown').textContent=fmt(peers.reduce((a,p)=>a+p.down,0));
-  $('#totalUp').textContent=fmt(peers.reduce((a,p)=>a+p.up,0));
-  $('#totalBytes').textContent=`↓ ${fmtBytes(peers.reduce((a,p)=>a+(p.rx||0),0))} · ↑ ${fmtBytes(peers.reduce((a,p)=>a+(p.tx||0),0))}`;
+  const peerDown=peers.reduce((a,p)=>a+p.down,0); const peerUp=peers.reduce((a,p)=>a+p.up,0); const peerRx=peers.reduce((a,p)=>a+(p.rx||0),0); const peerTx=peers.reduce((a,p)=>a+(p.tx||0),0);
+  $('#totalDown').textContent=fmt(Math.max(peerDown, interfaceStats?.downMbps||0));
+  $('#totalUp').textContent=fmt(Math.max(peerUp, interfaceStats?.upMbps||0));
+  $('#totalBytes').textContent=`↓ ${fmtBytes(Math.max(peerRx, interfaceStats?.rxBytes||0))} · ↑ ${fmtBytes(Math.max(peerTx, interfaceStats?.txBytes||0))}`;
   peers.forEach(p=>{
     const nameEl=$('#node-'+p.id+'-name'); if(nameEl) nameEl.textContent=(p.name||'').slice(0,20);
     const subEl=$('#node-'+p.id+'-sub'); if(subEl) subEl.textContent=p.connected ? `${p.ip} · ${p.latency}ms` : p.ip;
@@ -232,10 +234,10 @@ async function loadNetBird(){
         return {...meta, name:p.name||meta.name, ip:p.ip||meta.ip, role:p.role||meta.role, down:rates.down, up:rates.up, rx:Number(p.rxBytes ?? p.bytesRx ?? p.bytesReceived ?? 0)||0, tx:Number(p.txBytes ?? p.bytesTx ?? p.bytesSent ?? 0)||0, latency:Number(p.latency||0), connected:p.connected !== false && Object.keys(p).length>0};
       });
       list.forEach(p=>{ const rx=Number(p.rxBytes ?? p.bytesReceived ?? p.receivedBytes ?? NaN); const tx=Number(p.txBytes ?? p.bytesSent ?? p.sentBytes ?? NaN); if(Number.isFinite(rx)&&Number.isFinite(tx)) prevCounters.set(peerId(p),{rx,tx}); });
-      prevTime=now; $('#nbState').textContent='真实数据'; $('#updatedAt').textContent=new Date(data.generatedAt||now).toLocaleTimeString('zh-CN',{hour12:false}); renderPeers(); return;
+      interfaceStats=data.interface||null; prevTime=now; $('#nbState').textContent='真实数据'; $('#updatedAt').textContent=new Date(data.generatedAt||now).toLocaleTimeString('zh-CN',{hour12:false}); renderPeers(); return;
     }catch(e){}
   }
-  peers=PEER_META.map(p=>({...p,down:0,up:0,latency:0,connected:false})); $('#nbState').textContent='未连接采集器'; $('#updatedAt').textContent='--'; renderPeers();
+  interfaceStats=null; peers=PEER_META.map(p=>({...p,down:0,up:0,rx:0,tx:0,latency:0,connected:false})); $('#nbState').textContent='未连接采集器'; $('#updatedAt').textContent='--'; renderPeers();
 }
 function card(site, cls=''){ return `<a class="card ${cls}" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name} ${site.host}"><div class="icon" aria-hidden="true">${initials(site.name)}</div><h3>${site.name}</h3><p>${site.desc||site.host}</p></a>`; }
 let ptFromConfig=false; let customPt=[]; try{ customPt=JSON.parse(localStorage.getItem('navPtSites')||'[]'); }catch(e){ customPt=[]; }
