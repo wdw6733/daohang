@@ -29,16 +29,16 @@ docker compose up -d
 
 不要把真实内网 IP、服务清单、账号、Cookie、passkey、API key 写进公开仓库。
 
-## 上游更新同步
+## 镜像更新
 
-仓库带了 GitHub Actions：每天 03:20（Asia/Shanghai）检查 Dashy 的最新稳定 tag；有新版就自动更新 `docker-compose.yml` 里的固定镜像版本并提交到 `main`。
-
-升级时先拉最新仓库，再重启：
+镜像使用 `lissy93/dashy:latest`，并带 `pull_policy: always`。升级时拉最新仓库后重启即可，`up -d` 前会拉最新镜像：
 
 ```bash
 git pull
 docker compose down && docker compose up -d
 ```
+
+仓库的 GitHub Actions 只负责保持 compose 里的 Dashy 标签为 `latest`。
 
 ## 状态检查策略
 
