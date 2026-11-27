@@ -38,7 +38,7 @@ button,input{font:inherit}
 .panel-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:10px}.panel-head h2{margin:0;font-size:18px}.panel-head p{margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
 .badge{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#dbeafe;background:rgba(255,255,255,.06);font-size:12px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
 .topology{min-height:210px;border-radius:20px;background:radial-gradient(circle at 50% 48%,rgba(56,189,248,.20),transparent 34%),linear-gradient(160deg,rgba(2,6,23,.72),rgba(15,23,42,.42));border:1px solid rgba(148,197,255,.16);overflow:hidden}
-.topology svg{width:100%;height:210px;min-height:210px;display:block}.link{fill:none;stroke-linecap:round;stroke-dasharray:6 8;opacity:.92;animation:dashmove 1.4s linear infinite}.link.down{stroke:var(--blue);animation-direction:reverse}.link.up{stroke:var(--green)}.link.off{stroke:#475569;opacity:.35;animation-play-state:paused}@keyframes dashmove{to{stroke-dashoffset:-28}}
+.topology svg{width:100%;height:210px;min-height:210px;display:block}.link{fill:none;stroke-linecap:round;stroke-dasharray:6 8;opacity:.92;animation:dashmove 1.4s linear infinite}.link.down{stroke:var(--blue);animation-direction:reverse}.link.up{stroke:var(--green)}.link.off{opacity:.35;animation-play-state:paused}@keyframes dashmove{to{stroke-dashoffset:-28}}
 .node rect{fill:rgba(8,15,35,.88);stroke:rgba(125,211,252,.55);stroke-width:1.2}.node text{fill:#eaf2ff;font-size:11px;font-weight:700}.node .sub{fill:#9fb3d9;font-size:9px;font-weight:500}.core circle{fill:rgba(6,40,38,.92);stroke:rgba(52,211,153,.75);stroke-width:1.4}.core text{fill:#ecfdf5;font-size:12px;font-weight:800}
 .metrics{display:grid;gap:12px}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{border:1px solid rgba(148,197,255,.16);background:rgba(255,255,255,.055);border-radius:14px;padding:10px}.metric span{color:var(--muted);font-size:12px}.metric strong{display:block;font-size:20px;margin-top:4px}.metric.down strong{color:var(--blue)}.metric.up strong{color:var(--green)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px}.legend i{display:inline-block;width:22px;height:4px;border-radius:99px;vertical-align:middle;margin-right:6px}.legend .d i{background:var(--blue)}.legend .u i{background:var(--green)}
@@ -226,8 +226,8 @@ function renderPeers(){
       const link=$('#link-'+p.id+'-'+dir); if(!link) return;
       link.setAttribute('class','link '+dir+(p.connected?'':' off'));
       link.setAttribute('stroke-width', String(2+Math.min(3, rate/max*3)));
-      link.style.opacity=p.connected ? String(rate>0 ? 0.95 : 0.45) : '0.25';
-      link.style.animationDuration=(rate>0 ? Math.max(0.45, 1.8/(1+rate)) : 3)+'s';
+      link.style.opacity=p.connected ? String(rate>0 ? 0.95 : 0.78) : '0.35';
+      link.style.animationDuration=(rate>0 ? Math.max(0.45, 1.8/(1+rate)) : 2.2)+'s';
       link.style.animationPlayState=p.connected ? 'running' : 'paused';
     });
   });
@@ -248,7 +248,7 @@ async function loadNetBird(){
         const p=list.find(x=>peerId(x)===meta.id || x.ip===meta.ip) || {};
         const directDown=Number(p.downMbps ?? p.down ?? p.rxRateMbps ?? NaN); const directUp=Number(p.upMbps ?? p.up ?? p.txRateMbps ?? NaN);
         const rates=(Number.isFinite(directDown)||Number.isFinite(directUp)) ? {down:directDown||0, up:directUp||0} : rateFromCounters(p, now);
-        return {...meta, name:p.name||meta.name, ip:p.ip||meta.ip, role:p.role||meta.role, down:rates.down, up:rates.up, rx:Number(p.rxBytes ?? p.bytesRx ?? p.bytesReceived ?? 0)||0, tx:Number(p.txBytes ?? p.bytesTx ?? p.bytesSent ?? 0)||0, latency:Number(p.latency||0), connected:p.connected !== false && Object.keys(p).length>0};
+        return {...meta, name:p.name||meta.name, ip:p.ip||meta.ip, role:p.role||meta.role, down:rates.down, up:rates.up, rx:Number(p.rxBytes ?? p.bytesRx ?? p.bytesReceived ?? 0)||0, tx:Number(p.txBytes ?? p.bytesTx ?? p.bytesSent ?? 0)||0, latency:Number(p.latency||0), connected:Object.keys(p).length>0 && p.connected !== false};
       });
       list.forEach(p=>{ const rx=Number(p.rxBytes ?? p.bytesReceived ?? p.receivedBytes ?? NaN); const tx=Number(p.txBytes ?? p.bytesSent ?? p.sentBytes ?? NaN); if(Number.isFinite(rx)&&Number.isFinite(tx)) prevCounters.set(peerId(p),{rx,tx}); });
       interfaceStats=data.interface||null; prevTime=now; $('#nbState').textContent='真实数据'; $('#updatedAt').textContent=new Date(data.generatedAt||now).toLocaleTimeString('zh-CN',{hour12:false}); renderPeers(); return;
