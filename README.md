@@ -11,6 +11,13 @@ docker compose up -d
 
 默认端口 `28888`。如果端口被占用，在 `.env` 写 `NAV_PORT=28889`。
 
+本地设置放在 `local-config/config.json`，镜像更新不会覆盖它。旧 Dashy 设置可迁移：
+
+```bash
+python3 migrate-dashy.py user-data/conf.yml local-config/config.json
+docker compose up -d
+```
+
 ## 关键信息说明
 
 | 占位 | 要改成什么 | 在哪里改 |
