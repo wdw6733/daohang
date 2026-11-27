@@ -83,8 +83,8 @@ def normalize_peer(raw):
     name = first_value(raw, ["name", "hostname", "fqdn", "peerName", "remote", "remoteName"]) or "Peer"
     ip = first_value(raw, ["ip", "netbirdIp", "netbirdIP", "remoteIp", "remoteIP", "address"]) or ""
     ip = str(ip).split("/")[0]
-    rx = as_int(first_value(raw, ["rxBytes", "bytesReceived", "receivedBytes", "rx_bytes", "transferRx", "rx", "received"]))
-    tx = as_int(first_value(raw, ["txBytes", "bytesSent", "sentBytes", "tx_bytes", "transferTx", "tx", "sent"]))
+    rx = as_int(first_value(raw, ["rxBytes", "bytesRx", "bytesReceived", "receivedBytes", "rx_bytes", "transferRx", "transferReceived", "rx", "received"]))
+    tx = as_int(first_value(raw, ["txBytes", "bytesTx", "bytesSent", "sentBytes", "tx_bytes", "transferTx", "transferSent", "tx", "sent"]))
     latency_raw = first_value(raw, ["latency", "latencyMs", "latency_ms", "ping"])
     latency = 0
     if latency_raw is not None:
@@ -129,7 +129,7 @@ def peers_from_table(command):
         if "/" not in line or "NAME" in line:
             continue
         ip_match = re.search(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", line)
-        size_match = re.search(r"([0-9]+(?:\.[0-9]+)?\s*[A-Za-z]+)\s*/\s*([0-9]+(?:\.[0-9]+)?\s*[A-Za-z]+)", line)
+        size_match = re.search(r"([0-9]+(?:\.[0-9]+)?\s*(?:[A-Za-z]+)?)\s*/\s*([0-9]+(?:\.[0-9]+)?\s*(?:[A-Za-z]+)?)", line)
         if not ip_match or not size_match:
             continue
         ip = ip_match.group(0)
@@ -146,17 +146,38 @@ def peers_from_table(command):
     return peers
 
 
-def collect(args, previous, previous_time):
-    peers = []
+def collect_peers(json_command, table_command):
+    json_peers = []
     try:
-        peers = peers_from_json(args.command)
+        json_peers = peers_from_json(json_command)
     except Exception:
-        peers = []
-    if not peers:
-        try:
-            peers = peers_from_table(args.table_command)
-        except Exception:
-            peers = []
+        json_peers = []
+    need_table = (not json_peers) or all((p.get("rxBytes") or 0) == 0 and (p.get("txBytes") or 0) == 0 for p in json_peers)
+    if not need_table:
+        return json_peers
+    try:
+        table_peers = peers_from_table(table_command)
+    except Exception:
+        table_peers = []
+    if not table_peers:
+        return json_peers
+    by_key = {}
+    for peer in json_peers:
+        by_key[peer.get("ip") or peer.get("id")] = dict(peer)
+    for peer in table_peers:
+        key = peer.get("ip") or peer.get("id")
+        if key in by_key:
+            merged = {**by_key[key], **peer}
+            if by_key[key].get("name") and by_key[key]["name"] != "Peer":
+                merged["name"] = by_key[key]["name"]
+            by_key[key] = merged
+        else:
+            by_key[key] = peer
+    return list(by_key.values())
+
+
+def collect(args, previous, previous_time):
+    peers = collect_peers(args.command, args.table_command)
     now = time.time()
     out = []
     for peer in peers:
