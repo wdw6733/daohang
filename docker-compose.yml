@@ -1,9 +1,21 @@
 services:
+  init-config:
+    image: lissy93/dashy:latest
+    container_name: nav-dashy-init
+    pull_policy: always
+    entrypoint: ["sh", "-c"]
+    command: ["test -f /target/conf.yml || cp /app/user-data/conf.yml /target/conf.yml; chown -R 1000:1000 /target || true; chmod 755 /target; chmod 644 /target/conf.yml || true"]
+    volumes:
+      - ./user-data:/target
+
   dashy:
     image: lissy93/dashy:latest
     container_name: nav-dashy
     restart: unless-stopped
     pull_policy: always
+    depends_on:
+      init-config:
+        condition: service_completed_successfully
     ports:
       - "3000:8080"
     volumes:
