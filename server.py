@@ -29,16 +29,7 @@ previous_time = 0.0
 
 def collect_once():
     global payload, previous_time
-    peers = []
-    try:
-        peers = netbird_status.peers_from_json(JSON_COMMAND)
-    except Exception:
-        peers = []
-    if not peers:
-        try:
-            peers = netbird_status.peers_from_table(TABLE_COMMAND)
-        except Exception:
-            peers = []
+    peers = netbird_status.collect_peers(JSON_COMMAND, TABLE_COMMAND)
     now = time.time()
     out = []
     for peer in peers:
