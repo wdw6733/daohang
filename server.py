@@ -60,10 +60,49 @@ def collector_loop():
         time.sleep(INTERVAL)
 
 
+CONFIG_PATH = SITE / "local" / "config.json"
+
+
 class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if urlparse(self.path).path != "/api/config":
+            self.send_error(404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            data = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("config must be an object")
+            CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            tmp = CONFIG_PATH.with_suffix(".tmp")
+            tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(CONFIG_PATH)
+            body = b'{"ok": true}'
+            self.send_response(200)
+        except Exception as exc:
+            body = json.dumps({"ok": False, "error": str(exc)}).encode("utf-8")
+            self.send_response(400)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
+        if path == "/api/config":
+            try:
+                body = CONFIG_PATH.read_bytes()
+            except OSError:
+                body = b"{}"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if path in ("/netbird-status.json", "/api/netbird-status"):
             with lock:
                 body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
