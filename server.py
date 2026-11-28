@@ -74,6 +74,15 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(data, dict):
                 raise ValueError("config must be an object")
+            try:
+                existing = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+                if isinstance(existing, dict):
+                    existing.update(data)
+                    data = existing
+            except OSError:
+                pass
+            except ValueError:
+                pass
             CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
             tmp = CONFIG_PATH.with_suffix(".tmp")
             tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
