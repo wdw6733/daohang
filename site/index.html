@@ -45,8 +45,8 @@ button,input{font:inherit}
 .peer{display:grid;grid-template-columns:1fr auto;gap:6px;padding:8px 10px;border-radius:13px;background:rgba(255,255,255,.05);border:1px solid rgba(148,197,255,.12)}.peer b{font-size:14px}.peer small{display:block;color:var(--muted);margin-top:2px}.peer .nums{text-align:right;font-size:12px;line-height:1.55}.peer .nums .d{color:var(--blue)}.peer .nums .u{color:var(--green)}.bars{grid-column:1/-1;display:grid;gap:5px}.bar{height:4px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar i{display:block;height:100%;border-radius:99px}.bar .bd{background:linear-gradient(90deg,#0284c7,var(--blue))}.bar .bu{background:linear-gradient(90deg,#059669,var(--green))}
 .section{margin-top:14px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:0 2px 12px}.section-head h2{margin:0;font-size:18px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}.grid.wide{grid-template-columns:repeat(2,minmax(0,340px))}
-.card{min-height:76px;padding:12px;border-radius:16px;background:linear-gradient(155deg,rgba(255,255,255,.10),rgba(255,255,255,.045));border:1px solid rgba(148,197,255,.16);box-shadow:0 16px 44px rgba(0,0,0,.24);transition:transform .18s ease,border-color .18s ease,background .18s ease}.card:hover{transform:translateY(-3px);border-color:rgba(125,211,252,.48);background:linear-gradient(155deg,rgba(255,255,255,.14),rgba(255,255,255,.06))}
-.icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:900;color:#06111f;background:linear-gradient(135deg,#bae6fd,#a7f3d0);margin-bottom:12px}.card h3{margin:0 0 4px;font-size:14px;line-height:1.25;overflow-wrap:anywhere}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.card{min-height:76px;padding:12px;border-radius:16px;background:transparent;border:1px solid rgba(148,197,255,.16);transition:transform .18s ease,border-color .18s ease,background .18s ease}.card:hover{transform:translateY(-3px);border-color:rgba(125,211,252,.48);background:rgba(255,255,255,.05)}.icon img{width:100%;height:100%;object-fit:contain;border-radius:9px}.cfg-row{display:grid;grid-template-columns:1fr 1.3fr 1.3fr auto;gap:6px;margin:6px 0}.cfg-row input{background:rgba(2,6,23,.55);border:1px solid var(--line);border-radius:9px;color:#e2e8f0;padding:7px 9px;font-size:12px;min-width:0}.cfg-editor{grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px}.cfg-editor h3{margin:4px 0 8px;font-size:14px}
+.icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:900;color:#06111f;background:linear-gradient(135deg,#bae6fd,#a7f3d0);margin-bottom:12px;overflow:hidden}.icon:has(img){background:transparent}.card h3{margin:0 0 4px;font-size:14px;line-height:1.25;overflow-wrap:anywhere}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45;overflow-wrap:anywhere}
 .community .card{min-height:84px}.community .icon{width:38px;height:38px;border-radius:12px;font-size:15px}
 .pt-grid{grid-template-columns:repeat(8,minmax(0,1fr))}.pt-grid .card{min-height:72px;padding:10px}.pt-grid .icon{width:30px;height:30px;border-radius:9px;font-size:11px}.pt-grid h3{font-size:13px}
 .pt-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}.pt-layout .pt-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.docker-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.slot{border-style:dashed;display:grid;place-items:center;text-align:center;color:var(--muted)}.slot strong{color:#dbeafe;display:block;margin-bottom:6px}
@@ -77,7 +77,8 @@ button,input{font:inherit}
     <label class="setting"><span>我的容器</span><input type="checkbox" id="setDocker"></label>
     <label class="setting"><span>紧凑卡片</span><input type="checkbox" id="setCompact"></label>
     <label class="setting"><span>NetBird 刷新</span><select id="setRefresh"><option value="2000">2 秒</option><option value="5000">5 秒</option><option value="10000">10 秒</option></select></label>
-    <label class="setting"><span>新容器路线</span><select id="setRoute"><option value="auto">自动</option><option value="lan">内网</option><option value="wan">公网</option></select></label>
+    <label class="setting"><span>打开路线</span><select id="setRoute"><option value="auto">自动</option><option value="lan">内网</option><option value="wan">公网</option></select></label>
+    <div class="cfg-editor"><h3>容器应用设置（保存在后端 config.json，改完点保存立即生效）</h3><div id="cfgApps"></div><div class="app-actions"><button type="button" class="chip" id="cfgAdd">+ 添加应用</button><button type="button" class="chip active" id="cfgSave">保存到后端</button><span id="cfgMsg" style="font-size:12px;color:var(--muted)"></span></div><p class="hint">PT 站、技术社区也在同一个后端文件里；这里维护容器应用的名称、内网地址、公网地址，前端卡片不显示地址。</p></div>
   </section>
 
   <section class="panel netbird" id="netbirdSection" aria-labelledby="netbirdTitle">
@@ -125,12 +126,6 @@ button,input{font:inherit}
     <div class="section-head"><div><h2 id="ptTitle">PT 站</h2><p id="ptCount">还没有 PT 站，在右侧添加。</p></div></div>
     <div class="pt-layout">
       <div class="grid pt-grid" id="ptGrid"></div>
-      <form class="panel form" id="ptForm">
-        <h3>添加 PT 站</h3>
-        <div class="field"><label for="ptName">名称</label><input id="ptName" required placeholder="例如：M-Team" /></div>
-        <div class="field"><label for="ptUrl">地址</label><input id="ptUrl" required placeholder="https://example.com" /></div>
-        <button class="primary" type="submit">添加到 PT</button>
-      </form>
     </div>
   </section>
 
@@ -138,14 +133,6 @@ button,input{font:inherit}
     <div class="section-head"><div><h2 id="dockerTitle">我的容器</h2><p>位置留给你自己加。每个应用可填内网和公网地址，自动检测优先走内网。</p></div><span class="badge">Auto / LAN / WAN</span></div>
     <div class="docker-layout">
       <div class="slots" id="dockerGrid"></div>
-      <form class="panel form" id="appForm">
-        <h3>添加容器应用</h3>
-        <div class="field"><label for="appName">名称</label><input id="appName" required placeholder="例如：Transmission" /></div>
-        <div class="field"><label for="appLan">内网地址</label><input id="appLan" placeholder="http://192.168.124.251:9091" /></div>
-        <div class="field"><label for="appWan">公网地址</label><input id="appWan" placeholder="https://example.com" /></div>
-        <button class="primary" type="submit">添加到导航</button>
-        <p class="hint">自动检测为浏览器 best-effort：先探内网，通则走内网，不通走公网。正式部署时建议再接一个 NAS 小接口做服务端探活，结果更稳。</p>
-      </form>
     </div>
   </section>
 </main>
@@ -256,11 +243,13 @@ async function loadNetBird(){
   }
   interfaceStats=null; peers=PEER_META.map(p=>({...p,down:0,up:0,rx:0,tx:0,latency:0,connected:false})); $('#nbState').textContent='未连接采集器'; $('#updatedAt').textContent='--'; renderPeers();
 }
-function card(site, cls=''){ return `<a class="card ${cls}" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name} ${site.host}"><div class="icon" aria-hidden="true">${initials(site.name)}</div><h3>${site.name}</h3><p>${site.desc||site.host}</p></a>`; }
+function iconHtml(name, url){ let origin='', host=''; try{ const u=new URL(url); origin=u.origin; host=u.host; }catch(e){} if(!origin) return `<div class="icon" aria-hidden="true">${initials(name)}</div>`; return `<div class="icon" aria-hidden="true"><img alt="" loading="lazy" src="${origin}/favicon.ico" data-host="${host}" data-name="${name}" onerror="iconErr(this)"></div>`; }
+function iconErr(img){ const st=img.dataset.st||'0'; if(st==='0'){ img.dataset.st='1'; img.src='https://www.google.com/s2/favicons?domain='+encodeURIComponent(img.dataset.host||'')+'&sz=128'; } else { const p=img.parentNode; if(p) p.textContent=initials(img.dataset.name||'?'); } }
+function card(site, cls=''){ return `<a class="card ${cls}" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name}">${iconHtml(site.name, site.url)}<h3>${site.name}</h3></a>`; }
 let ptFromConfig=false; let customPt=[]; try{ customPt=JSON.parse(localStorage.getItem('navPtSites')||'[]'); }catch(e){ customPt=[]; }
 function savePt(){ localStorage.setItem('navPtSites', JSON.stringify(customPt)); }
-function ptCard(site, customIndex=-1){ const inner=`<div class="icon" aria-hidden="true">${initials(site.name)}</div><h3>${site.name}</h3><p>${site.host||site.url}</p>`; if(customIndex<0) return `<a class="card" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name} ${site.host}">${inner}</a>`; return `<article class="card" data-search="${site.name} ${site.host}"><a href="${site.url}" target="_blank" rel="noopener">${inner}</a><div class="app-actions"><button class="chip delete" data-pt-del="${customIndex}">删除</button></div></article>`; }
-function renderSites(){ $('#communityGrid').innerHTML=COMMUNITY.map(s=>card(s)).join(''); const basePt=ptFromConfig ? PT_SITES : []; const allPt=[...basePt.map(s=>({site:s,customIndex:-1})), ...customPt.map((s,i)=>({site:s,customIndex:i}))]; $('#ptGrid').innerHTML=allPt.length ? allPt.map(x=>ptCard(x.site,x.customIndex)).join('') : '<div class="card slot" data-search="PT 空位"><div><strong>暂无 PT 站</strong>在右侧添加</div></div>'; $('#ptCount').textContent=allPt.length ? `已添加 ${allPt.length} 个 PT 站。` : '还没有 PT 站，在右侧添加。'; }
+function ptCard(site, customIndex=-1){ return `<a class="card" href="${site.url}" target="_blank" rel="noopener" data-search="${site.name}">${iconHtml(site.name, site.url)}<h3>${site.name}</h3></a>`; }
+function renderSites(){ $('#communityGrid').innerHTML=COMMUNITY.map(s=>card(s)).join(''); const basePt=ptFromConfig ? PT_SITES : []; const allPt=[...basePt.map(s=>({site:s,customIndex:-1})), ...customPt.map((s,i)=>({site:s,customIndex:i}))]; $('#ptGrid').innerHTML=allPt.length ? allPt.map(x=>ptCard(x.site,x.customIndex)).join('') : '<div class="card slot" data-search="PT 空位"><div><strong>暂无 PT 站</strong>在后端 config 里添加</div></div>'; $('#ptCount').textContent=allPt.length ? `已添加 ${allPt.length} 个 PT 站。` : '还没有 PT 站。'; }
 
 const defaultSettings={netbird:true,community:true,pt:true,docker:true,compact:true,refresh:2000,route:'auto'};
 let settings={...defaultSettings}; try{ settings={...defaultSettings,...JSON.parse(localStorage.getItem('navSettings')||'{}')}; }catch(e){}
@@ -277,12 +266,12 @@ function applySettings(){
   $('#setRefresh').value=String(settings.refresh); $('#setRoute').value=settings.route;
   startNetBirdTimer();
 }
-$('#settingsToggle').addEventListener('click',()=>{ const panel=$('#settingsPanel'); const open=panel.classList.toggle('hidden')===false; $('#settingsToggle').setAttribute('aria-expanded', String(open)); });
+$('#settingsToggle').addEventListener('click',()=>{ renderCfgEditor(); const panel=$('#settingsPanel'); const open=panel.classList.toggle('hidden')===false; $('#settingsToggle').setAttribute('aria-expanded', String(open)); });
 [['setNetbird','netbird'],['setCommunity','community'],['setPt','pt'],['setDocker','docker'],['setCompact','compact']].forEach(([id,key])=>{ $('#'+id).addEventListener('change',e=>{ settings[key]=e.target.checked; saveSettings(); applySettings(); }); });
 $('#setRefresh').addEventListener('change',e=>{ settings.refresh=Number(e.target.value); saveSettings(); applySettings(); });
 $('#setRoute').addEventListener('change',e=>{ settings.route=e.target.value; saveSettings(); });
-let configApps=[]; let apps=[]; try{ apps=JSON.parse(localStorage.getItem('navDockerApps')||'[]'); }catch(e){ apps=[]; }
-async function loadConfig(){ for(const url of ['local/config.json','config.json']){ try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) continue; const cfg=await r.json(); if(Array.isArray(cfg.ptSites)){ PT_SITES=cfg.ptSites; ptFromConfig=true; } if(Array.isArray(cfg.community)) COMMUNITY=cfg.community; if(Array.isArray(cfg.peerMeta)) PEER_META=cfg.peerMeta; if(Array.isArray(cfg.dockerApps)) configApps=cfg.dockerApps; peers=PEER_META.map(p=>({...p,down:0,up:0,latency:0,connected:false})); return; }catch(e){} } }
+let configApps=[]; let cfgFull={}; let apps=[]; try{ apps=JSON.parse(localStorage.getItem('navDockerApps')||'[]'); }catch(e){ apps=[]; }
+async function loadConfig(){ for(const url of ['local/config.json','config.json']){ try{ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) continue; const cfg=await r.json(); cfgFull=cfg; if(Array.isArray(cfg.ptSites)){ PT_SITES=cfg.ptSites; ptFromConfig=true; } if(Array.isArray(cfg.community)) COMMUNITY=cfg.community; if(Array.isArray(cfg.peerMeta)) PEER_META=cfg.peerMeta; if(Array.isArray(cfg.dockerApps)) configApps=cfg.dockerApps; peers=PEER_META.map(p=>({...p,down:0,up:0,latency:0,connected:false})); return; }catch(e){} } }
 function saveApps(){ localStorage.setItem('navDockerApps', JSON.stringify(apps)); }
 function normUrl(u){ if(!u) return ''; return /^https?:\/\//i.test(u)?u:'http://'+u; }
 async function probe(url){
@@ -295,14 +284,16 @@ async function detectRoute(app){
   const lanOk=await probe(app.lan); return lanOk ? 'lan' : 'wan';
 }
 async function renderApps(){
-  const grid=$('#dockerGrid');
-  const allApps=[...configApps, ...apps]; if(!allApps.length){ grid.innerHTML='<div class="card slot" data-search="容器 空位"><div><strong>暂无容器</strong>在右侧添加</div></div>'; return; }
-  grid.innerHTML=allApps.map((a,i)=>`<article class="card" data-search="${a.name} ${a.lan} ${a.wan}"><div class="icon" aria-hidden="true">${initials(a.name)}</div><h3>${a.name}</h3><p>${a.lan||'未填内网'}<br>${a.wan||'未填公网'}</p><div class="route">当前路线：<b id="route-${i}">检测中…</b></div><div class="app-actions"><button class="chip ${a.mode==='auto'?'active':''}" data-act="auto" data-i="${i}">自动</button><button class="chip ${a.mode==='lan'?'active':''}" data-act="lan" data-i="${i}">内网</button><button class="chip ${a.mode==='wan'?'active':''}" data-act="wan" data-i="${i}">公网</button><button class="chip" data-act="open" data-i="${i}">打开</button><button class="chip delete" data-act="del" data-i="${i}">删除</button></div></article>`).join('');
-  allApps.forEach(async(a,i)=>{ const r=await detectRoute(a); const el=$('#route-'+i); if(el) el.textContent=r==='lan'?'内网':'公网'; a._route=r; });
+  const grid=$('#dockerGrid').addEventListener('click',e=>{ const cardEl=e.target.closest('.app-card'); if(!cardEl) return; const a=[...configApps, ...apps][Number(cardEl.dataset.i)]; if(a) openApp(a); });
+$('#cfgApps')?.addEventListener('click',e=>{ const b=e.target.closest('button[data-cfg-del]'); if(!b) return; configApps.splice(Number(b.dataset.cfgDel),1); renderCfgEditor(); });
+$('#cfgAdd')?.addEventListener('click',()=>{ configApps.push({name:'',lan:'',wan:'',mode:'auto'}); renderCfgEditor(); });
+$('#cfgSave')?.addEventListener('click',async()=>{ $$('#cfgApps .cfg-row').forEach((row,i)=>{ const q=f=>row.querySelector(`input[data-cfg="${f}"]`)?.value.trim()||''; configApps[i]={...(configApps[i]||{}), name:q('name'), lan:normUrl(q('lan')), wan:normUrl(q('wan')), mode:configApps[i]?.mode||'auto'}; }); cfgFull.dockerApps=configApps.filter(a=>a.name); const msg=$('#cfgMsg'); try{ const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfgFull)}); if(!r.ok) throw new Error(r.status); msg.textContent='已保存到后端'; renderApps(); }catch(e){ msg.textContent='保存失败：后端不可写（检查 local-config 挂载是否可写）'; } });
+  const allApps=[...configApps, ...apps]; if(!allApps.length){ grid.innerHTML='<div class="card slot" data-search="容器 空位"><div><strong>暂无容器</strong>在设置里添加</div></div>'; return; }
+  grid.innerHTML=allApps.map((a,i)=>`<article class="card app-card" data-i="${i}" data-search="${a.name}" title="${a.name}">${iconHtml(a.name, a.lan||a.wan)}<h3>${a.name}</h3></article>`).join('');
 }
-$('#ptForm').addEventListener('submit',e=>{ e.preventDefault(); const name=$('#ptName').value.trim(); const url=normUrl($('#ptUrl').value.trim()); if(!name||!url) return; let host=url; try{ host=new URL(url).host; }catch(err){} customPt.push({id:'pt-'+Date.now(),name,host,url}); savePt(); e.target.reset(); renderSites(); applySearch(); });
+async function openApp(a){ const mode=a.mode||settings.route||'auto'; let url=''; if(mode==='lan') url=a.lan; else if(mode==='wan') url=a.wan; else { const r=await detectRoute(a); url=r==='lan'?a.lan:a.wan; } if(!url) url=a.lan||a.wan; if(url) window.open(url,'_blank','noopener'); }
+function renderCfgEditor(){ const box=$('#cfgApps'); if(!box) return; box.innerHTML=configApps.map((a,i)=>`<div class="cfg-row"><input data-cfg="name" data-i="${i}" value="${(a.name||'').replace(/"/g,'&quot;')}" placeholder="名称"><input data-cfg="lan" data-i="${i}" value="${(a.lan||'').replace(/"/g,'&quot;')}" placeholder="内网地址"><input data-cfg="wan" data-i="${i}" value="${(a.wan||'').replace(/"/g,'&quot;')}" placeholder="公网地址"><button type="button" class="chip delete" data-cfg-del="${i}">删除</button></div>`).join(''); }
 $('#ptGrid').addEventListener('click',e=>{ const btn=e.target.closest('button[data-pt-del]'); if(!btn) return; customPt.splice(Number(btn.dataset.ptDel),1); savePt(); renderSites(); applySearch(); });
-$('#appForm').addEventListener('submit',e=>{ e.preventDefault(); const name=$('#appName').value.trim(); if(!name) return; apps.push({name,lan:normUrl($('#appLan').value.trim()),wan:normUrl($('#appWan').value.trim()),mode:settings.route||'auto'}); saveApps(); e.target.reset(); renderApps(); });
 $('#dockerGrid').addEventListener('click',async e=>{ const btn=e.target.closest('button[data-act]'); if(!btn) return; const i=Number(btn.dataset.i); const a=[...configApps, ...apps][i]; if(!a) return; const act=btn.dataset.act; if(act==='del'){ if(i>=configApps.length){ apps.splice(i-configApps.length,1); saveApps(); } renderApps(); return; } if(['auto','lan','wan'].includes(act)){ a.mode=act; saveApps(); renderApps(); return; } if(act==='open'){ const r=await detectRoute(a); const url=r==='lan'?a.lan:a.wan; if(url) window.open(url,'_blank','noopener'); } });
 function applySearch(){ const q=$('#search').value.trim().toLowerCase(); $$('[data-search]').forEach(el=>{ el.classList.toggle('hidden', !!q && !el.dataset.search.toLowerCase().includes(q)); }); }
 $('#search').addEventListener('input',applySearch); $('#clearSearch').addEventListener('click',()=>{ $('#search').value=''; applySearch(); $('#search').focus(); });
