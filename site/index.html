@@ -206,16 +206,16 @@ function renderPeers(){
   const connectedCount=Math.max(1, peers.filter(p=>p.connected).length);
   peers.forEach(p=>{
     const nameEl=$('#node-'+p.id+'-name'); if(nameEl) nameEl.textContent=(p.name||'').replace(/\.netbird\.selfhosted$/,'').replace(/\.netbird$/,'').slice(0,22);
-    const subEl=$('#node-'+p.id+'-sub'); if(subEl) subEl.textContent=p.connected ? `${p.ip} · ${p.latency}ms` : p.ip;
+    const subEl=$('#node-'+p.id+'-sub'); if(subEl) subEl.textContent=(p.connected && p.latency>0) ? `${p.ip} · ${p.latency}ms` : p.ip;
     const effDown=p.down || ((interfaceStats?.downMbps||0)/connectedCount);
     const effUp=p.up || ((interfaceStats?.upMbps||0)/connectedCount);
     [['down',effDown],['up',effUp]].forEach(([dir,rate])=>{
       const link=$('#link-'+p.id+'-'+dir); if(!link) return;
       link.setAttribute('class','link '+dir+(p.connected?'':' off'));
       link.setAttribute('stroke-width', String(2+Math.min(3, rate/max*3)));
-      link.style.opacity=p.connected ? String(rate>0 ? 0.95 : 0.78) : '0.35';
+      link.style.opacity=p.connected ? String(rate>0 ? 0.95 : 0.85) : '0.4';
       link.style.animationDuration=(rate>0 ? Math.max(0.45, 1.8/(1+rate)) : 2.2)+'s';
-      link.style.animationPlayState=p.connected ? 'running' : 'paused';
+      link.style.animationPlayState='running';
     });
   });
 }
